@@ -1,4 +1,5 @@
 import * as tf from '@tensorflow/tfjs';
+import * as cocossd from '@tensorflow-models/coco-ssd';
 
 class TensorflowService {
   constructor() {
@@ -7,24 +8,21 @@ class TensorflowService {
 
   async loadModel(modelUrl) {
     try {
-      this.model = await tf.loadLayersModel(modelUrl);
+      this.model = await cocossd.load();
       console.log('Model loaded successfully');
     } catch (error) {
       console.error('Error loading the model:', error);
+      throw error;
     }
   }
 
-  async predict(input) {
+  async detectObjects(video) {
     if (!this.model) {
       throw new Error('Model not loaded');
     }
 
-    const tensorInput = tf.tensor(input);
-    const prediction = await this.model.predict(tensorInput);
-    const result = await prediction.array();
-    tensorInput.dispose();
-    prediction.dispose();
-    return result;
+    const predictions = await this.model.detect(video);
+    return predictions;
   }
 }
 
