@@ -6,7 +6,7 @@ class TensorflowService {
     this.model = null;
   }
 
-  async loadModel(modelUrl) {
+  async loadModel() {
     try {
       this.model = await cocossd.load();
       console.log('Model loaded successfully');
@@ -22,7 +22,20 @@ class TensorflowService {
     }
 
     const predictions = await this.model.detect(video);
-    return predictions;
+    return this.filterPredictions(predictions);
+  }
+
+  filterPredictions(predictions) {
+    const detectionArea = JSON.parse(localStorage.getItem('detectionArea')) || { x: 0, y: 0, width: 640, height: 480 };
+    return predictions.filter(prediction => {
+      const [x, y, width, height] = prediction.bbox;
+      return (
+        x >= detectionArea.x &&
+        y >= detectionArea.y &&
+        x + width <= detectionArea.x + detectionArea.width &&
+        y + height <= detectionArea.y + detectionArea.height
+      );
+    });
   }
 }
 
