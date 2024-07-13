@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Slider } from "@/components/ui/slider";
 import { toPng } from 'html-to-image';
 
 const TensorflowDemo = () => {
@@ -27,11 +28,13 @@ const TensorflowDemo = () => {
     additionalNotes: ''
   });
   const [capturedScreenshot, setCapturedScreenshot] = useState(null);
+  const [isDefiningArea, setIsDefiningArea] = useState(false);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const { toast } = useToast();
   const dispatch = useDispatch();
   const selectedItem = useSelector((state) => state.settings.selectedItem);
+  const savedDetectionArea = useSelector((state) => state.settings.detectionArea);
   const counters = useSelector((state) => state.counters);
 
   useEffect(() => {
@@ -54,6 +57,11 @@ const TensorflowDemo = () => {
     };
     loadModel();
   }, []);
+
+  useEffect(() => {
+    // Load saved detection area
+    setDetectionArea(savedDetectionArea);
+  }, [savedDetectionArea]);
 
   const startDetection = async () => {
     if (!isModelLoaded) {
@@ -215,6 +223,18 @@ const TensorflowDemo = () => {
     setCapturedScreenshot(null);
   };
 
+  const handleDefineArea = () => {
+    setIsDefiningArea(true);
+    toast({
+      title: "Define Detection Area",
+      description: "Use the sliders to adjust the detection area",
+    });
+  };
+
+  const handleAreaChange = (key, value) => {
+    setDetectionArea(prev => ({ ...prev, [key]: value[0] }));
+  };
+
   return (
     <div className="container mx-auto p-4">
       <Card>
@@ -252,6 +272,9 @@ const TensorflowDemo = () => {
               <Button onClick={toggleCamera} disabled={isDetecting}>
                 Toggle Camera
               </Button>
+              <Button onClick={handleDefineArea}>
+                Define Detection Area
+              </Button>
               <Button onClick={handleSaveDetectionArea}>
                 Save Detection Area
               </Button>
@@ -259,10 +282,50 @@ const TensorflowDemo = () => {
                 Capture Screenshot
               </Button>
             </div>
+            {isDefiningArea && (
+              <div className="space-y-4">
+                <div>
+                  <Label>X Position</Label>
+                  <Slider
+                    value={[detectionArea.x]}
+                    onValueChange={(value) => handleAreaChange('x', value)}
+                    max={100}
+                    step={1}
+                  />
+                </div>
+                <div>
+                  <Label>Y Position</Label>
+                  <Slider
+                    value={[detectionArea.y]}
+                    onValueChange={(value) => handleAreaChange('y', value)}
+                    max={100}
+                    step={1}
+                  />
+                </div>
+                <div>
+                  <Label>Width</Label>
+                  <Slider
+                    value={[detectionArea.width]}
+                    onValueChange={(value) => handleAreaChange('width', value)}
+                    max={100}
+                    step={1}
+                  />
+                </div>
+                <div>
+                  <Label>Height</Label>
+                  <Slider
+                    value={[detectionArea.height]}
+                    onValueChange={(value) => handleAreaChange('height', value)}
+                    max={100}
+                    step={1}
+                  />
+                </div>
+              </div>
+            )}
             <div className="text-center">
               <p>Selected Item: {selectedItem || 'None'}</p>
               <p>Detected Items Count: {detectedItemsCount}</p>
-              <p>Current Count: {selectedItem ? counters[selectedItem].allTime : 'N/A'}</p>
+              <p>Current Count: {selectedItem ? counters[selectedItem].counts[Object.keys(counters[selectedItem].counts).pop()] || 0 : 'N/A'}</p>
             </div>
           </div>
         </CardContent>
