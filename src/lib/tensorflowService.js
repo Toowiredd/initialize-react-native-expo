@@ -37,6 +37,20 @@ class TensorflowService {
       );
     });
   }
+
+  async detectObjectsByItem(video, itemId) {
+    if (!this.model) {
+      throw new Error('Model not loaded');
+    }
+
+    const predictions = await this.model.detect(video);
+    const filteredPredictions = this.filterPredictions(predictions);
+    return this.filterByItem(filteredPredictions, itemId);
+  }
+
+  filterByItem(predictions, itemId) {
+    return predictions.filter(prediction => prediction.class === itemId);
+  }
 }
 
 export const tensorflowService = new TensorflowService();
