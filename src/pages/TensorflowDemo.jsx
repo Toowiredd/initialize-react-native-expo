@@ -6,6 +6,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
 import { incrementCount } from '../store/countersSlice';
 import { saveDetectionArea } from '../store/settingsSlice';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { toPng } from 'html-to-image';
 
 const TensorflowDemo = () => {
   const [isModelLoaded, setIsModelLoaded] = useState(false);
@@ -13,6 +17,9 @@ const TensorflowDemo = () => {
   const [detectedItemsCount, setDetectedItemsCount] = useState(0);
   const [facingMode, setFacingMode] = useState('environment');
   const [detectionArea, setDetectionArea] = useState({ x: 0, y: 0, width: 100, height: 100 });
+  const [isScreenshotDialogOpen, setIsScreenshotDialogOpen] = useState(false);
+  const [screenshotMetadata, setScreenshotMetadata] = useState('');
+  const [capturedScreenshot, setCapturedScreenshot] = useState(null);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const { toast } = useToast();
@@ -146,6 +153,39 @@ const TensorflowDemo = () => {
     });
   };
 
+  const captureScreenshot = async () => {
+    if (!videoRef.current) return;
+
+    try {
+      const dataUrl = await toPng(videoRef.current);
+      setCapturedScreenshot(dataUrl);
+      setIsScreenshotDialogOpen(true);
+    } catch (error) {
+      console.error('Error capturing screenshot:', error);
+      toast({
+        title: "Screenshot error",
+        description: "Unable to capture screenshot",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleSaveScreenshot = () => {
+    // Here you would typically send the screenshot and metadata to your backend
+    // For this example, we'll just log it to the console
+    console.log('Screenshot saved:', capturedScreenshot);
+    console.log('Metadata:', screenshotMetadata);
+
+    toast({
+      title: "Screenshot saved",
+      description: "The screenshot and metadata have been saved",
+    });
+
+    setIsScreenshotDialogOpen(false);
+    setScreenshotMetadata('');
+    setCapturedScreenshot(null);
+  };
+
   return (
     <div className="container mx-auto p-4">
       <Card>
@@ -186,6 +226,9 @@ const TensorflowDemo = () => {
               <Button onClick={handleSaveDetectionArea}>
                 Save Detection Area
               </Button>
+              <Button onClick={captureScreenshot} disabled={!isDetecting}>
+                Capture Screenshot
+              </Button>
             </div>
             <div className="text-center">
               <p>Selected Item: {selectedItem || 'None'}</p>
@@ -195,6 +238,33 @@ const TensorflowDemo = () => {
           </div>
         </CardContent>
       </Card>
+
+      <Dialog open={isScreenshotDialogOpen} onOpenChange={setIsScreenshotDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add Metadata to Screenshot</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            {capturedScreenshot && (
+              <img src={capturedScreenshot} alt="Captured screenshot" className="max-w-full h-auto" />
+            )}
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="metadata" className="text-right">
+                Metadata
+              </Label>
+              <Input
+                id="metadata"
+                value={screenshotMetadata}
+                onChange={(e) => setScreenshotMetadata(e.target.value)}
+                className="col-span-3"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button onClick={handleSaveScreenshot}>Save Screenshot</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
