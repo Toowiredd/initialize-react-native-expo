@@ -84,10 +84,14 @@ const TensorflowDemo = () => {
 
     const detectedItems = await tensorflowService.detectObjects(videoRef.current, selectedItem);
     const ctx = canvasRef.current.getContext('2d');
+    
+    // Clear the previous frame
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
     
+    // Draw the current video frame
     ctx.drawImage(videoRef.current, 0, 0, ctx.canvas.width, ctx.canvas.height);
 
+    // Draw bounding boxes for detected items
     detectedItems.forEach(item => {
       const [x, y, width, height] = item.bbox;
       ctx.strokeStyle = '#00FFFF';
@@ -104,6 +108,7 @@ const TensorflowDemo = () => {
 
     setDetectedItemsCount(tensorflowService.getDetectedItemsCount());
 
+    // Request the next animation frame
     requestAnimationFrame(detectFrame);
   };
 
