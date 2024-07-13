@@ -1,14 +1,25 @@
 import { useState, useRef, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { useToast } from "@/components/ui/use-toast";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { setSelectedItem } from '../store/settingsSlice';
 
 const Settings = () => {
   const [detectionArea, setDetectionArea] = useState({ x: 0, y: 0, width: 100, height: 100 });
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const { toast } = useToast();
+  const dispatch = useDispatch();
+  const selectedItem = useSelector((state) => state.settings.selectedItem);
 
   useEffect(() => {
     startCamera();
@@ -58,7 +69,6 @@ const Settings = () => {
   };
 
   const saveSettings = () => {
-    // Save detection area settings to localStorage or send to a backend
     localStorage.setItem('detectionArea', JSON.stringify(detectionArea));
     toast({
       title: "Settings saved",
@@ -66,8 +76,34 @@ const Settings = () => {
     });
   };
 
+  const handleItemSelection = (value) => {
+    dispatch(setSelectedItem(value));
+  };
+
   return (
     <div className="container mx-auto p-4">
+      <Card className="mb-4">
+        <CardHeader>
+          <CardTitle>Item Selection</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Select onValueChange={handleItemSelection} value={selectedItem}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Select an item" />
+            </SelectTrigger>
+            <SelectContent>
+              {[1, 2, 3, 4, 5].map((item) => (
+                <SelectItem key={item} value={item.toString()}>
+                  Item {item}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {selectedItem && (
+            <p className="mt-2">Selected Item: {selectedItem}</p>
+          )}
+        </CardContent>
+      </Card>
       <Card>
         <CardHeader>
           <CardTitle>Detection Area Settings</CardTitle>
