@@ -9,6 +9,7 @@ import { saveDetectionArea } from '../store/settingsSlice';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { toPng } from 'html-to-image';
 
 const TensorflowDemo = () => {
@@ -18,7 +19,13 @@ const TensorflowDemo = () => {
   const [facingMode, setFacingMode] = useState('environment');
   const [detectionArea, setDetectionArea] = useState({ x: 0, y: 0, width: 100, height: 100 });
   const [isScreenshotDialogOpen, setIsScreenshotDialogOpen] = useState(false);
-  const [screenshotMetadata, setScreenshotMetadata] = useState('');
+  const [screenshotMetadata, setScreenshotMetadata] = useState({
+    itemType: '',
+    quantity: '',
+    lighting: '',
+    background: '',
+    additionalNotes: ''
+  });
   const [capturedScreenshot, setCapturedScreenshot] = useState(null);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -170,19 +177,35 @@ const TensorflowDemo = () => {
     }
   };
 
-  const handleSaveScreenshot = () => {
-    // Here you would typically send the screenshot and metadata to your backend
-    // For this example, we'll just log it to the console
-    console.log('Screenshot saved:', capturedScreenshot);
-    console.log('Metadata:', screenshotMetadata);
+  const handleMetadataChange = (e) => {
+    const { name, value } = e.target;
+    setScreenshotMetadata(prev => ({ ...prev, [name]: value }));
+  };
 
-    toast({
-      title: "Screenshot saved",
-      description: "The screenshot and metadata have been saved",
-    });
+  const handleSaveScreenshot = async () => {
+    try {
+      await tensorflowService.improveModel(capturedScreenshot, screenshotMetadata);
+      toast({
+        title: "Model improved",
+        description: "The screenshot and metadata have been used to improve the model",
+      });
+    } catch (error) {
+      console.error('Error improving model:', error);
+      toast({
+        title: "Model improvement error",
+        description: "Unable to improve the model with the provided data",
+        variant: "destructive",
+      });
+    }
 
     setIsScreenshotDialogOpen(false);
-    setScreenshotMetadata('');
+    setScreenshotMetadata({
+      itemType: '',
+      quantity: '',
+      lighting: '',
+      background: '',
+      additionalNotes: ''
+    });
     setCapturedScreenshot(null);
   };
 
@@ -249,19 +272,69 @@ const TensorflowDemo = () => {
               <img src={capturedScreenshot} alt="Captured screenshot" className="max-w-full h-auto" />
             )}
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="metadata" className="text-right">
-                Metadata
+              <Label htmlFor="itemType" className="text-right">
+                Item Type
               </Label>
               <Input
-                id="metadata"
-                value={screenshotMetadata}
-                onChange={(e) => setScreenshotMetadata(e.target.value)}
+                id="itemType"
+                name="itemType"
+                value={screenshotMetadata.itemType}
+                onChange={handleMetadataChange}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="quantity" className="text-right">
+                Quantity
+              </Label>
+              <Input
+                id="quantity"
+                name="quantity"
+                type="number"
+                value={screenshotMetadata.quantity}
+                onChange={handleMetadataChange}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="lighting" className="text-right">
+                Lighting Conditions
+              </Label>
+              <Input
+                id="lighting"
+                name="lighting"
+                value={screenshotMetadata.lighting}
+                onChange={handleMetadataChange}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="background" className="text-right">
+                Background
+              </Label>
+              <Input
+                id="background"
+                name="background"
+                value={screenshotMetadata.background}
+                onChange={handleMetadataChange}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="additionalNotes" className="text-right">
+                Additional Notes
+              </Label>
+              <Textarea
+                id="additionalNotes"
+                name="additionalNotes"
+                value={screenshotMetadata.additionalNotes}
+                onChange={handleMetadataChange}
                 className="col-span-3"
               />
             </div>
           </div>
           <DialogFooter>
-            <Button onClick={handleSaveScreenshot}>Save Screenshot</Button>
+            <Button onClick={handleSaveScreenshot}>Save and Improve Model</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
