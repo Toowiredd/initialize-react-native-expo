@@ -39,18 +39,28 @@ class TensorflowService {
     });
   }
 
-  async detectObjectsByItem(video, itemId) {
+  async detectObjectsByItem(video, selectedItem) {
     if (!this.model) {
       throw new Error('Model not loaded');
     }
 
     const predictions = await this.model.detect(video);
     const filteredPredictions = this.filterPredictions(predictions);
-    return this.filterByItem(filteredPredictions, itemId);
+    return this.filterByItem(filteredPredictions, selectedItem);
   }
 
-  filterByItem(predictions, itemId) {
-    return predictions.filter(prediction => prediction.class === itemId);
+  filterByItem(predictions, selectedItem) {
+    const itemMapping = {
+      'plastic_bottle': ['bottle'],
+      'aluminum_can': ['can'],
+      'cardboard_carton': ['box', 'carton']
+    };
+
+    const allowedClasses = itemMapping[selectedItem] || [];
+
+    return predictions.filter(prediction => 
+      allowedClasses.includes(prediction.class.toLowerCase())
+    );
   }
 
   async updateModel(capturedImages) {
