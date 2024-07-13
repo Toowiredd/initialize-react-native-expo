@@ -5,12 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
 import { incrementCount } from '../store/countersSlice';
+import { saveDetectionArea } from '../store/settingsSlice';
 
 const TensorflowDemo = () => {
   const [isModelLoaded, setIsModelLoaded] = useState(false);
   const [isDetecting, setIsDetecting] = useState(false);
   const [detectedItemsCount, setDetectedItemsCount] = useState(0);
   const [facingMode, setFacingMode] = useState('environment');
+  const [detectionArea, setDetectionArea] = useState({ x: 0, y: 0, width: 100, height: 100 });
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const { toast } = useToast();
@@ -91,25 +93,57 @@ const TensorflowDemo = () => {
     // Draw the current video frame
     ctx.drawImage(videoRef.current, 0, 0, ctx.canvas.width, ctx.canvas.height);
 
+    // Draw detection area
+    ctx.strokeStyle = '#00FF00';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(
+      detectionArea.x * ctx.canvas.width / 100,
+      detectionArea.y * ctx.canvas.height / 100,
+      detectionArea.width * ctx.canvas.width / 100,
+      detectionArea.height * ctx.canvas.height / 100
+    );
+
     // Draw bounding boxes for detected items
+    let itemsInArea = 0;
     detectedItems.forEach(item => {
       const [x, y, width, height] = item.bbox;
-      ctx.strokeStyle = '#00FFFF';
-      ctx.lineWidth = 4;
-      ctx.strokeRect(x, y, width, height);
+      
+      // Check if the detected item is within the detection area
+      if (
+        x >= detectionArea.x * ctx.canvas.width / 100 &&
+        y >= detectionArea.y * ctx.canvas.height / 100 &&
+        x + width <= (detectionArea.x + detectionArea.width) * ctx.canvas.width / 100 &&
+        y + height <= (detectionArea.y + detectionArea.height) * ctx.canvas.height / 100
+      ) {
+        ctx.strokeStyle = '#00FFFF';
+        ctx.lineWidth = 4;
+        ctx.strokeRect(x, y, width, height);
 
-      ctx.fillStyle = '#00FFFF';
-      ctx.font = '18px Arial';
-      ctx.fillText(item.class, x, y > 10 ? y - 5 : 10);
+        ctx.fillStyle = '#00FFFF';
+        ctx.font = '18px Arial';
+        ctx.fillText(item.class, x, y > 10 ? y - 5 : 10);
 
-      // Increment the count for the detected item
-      dispatch(incrementCount({ item: selectedItem, amount: 1 }));
+        itemsInArea++;
+      }
     });
 
-    setDetectedItemsCount(tensorflowService.getDetectedItemsCount());
+    // Only increment the count if items are detected within the area
+    if (itemsInArea > 0) {
+      dispatch(incrementCount({ item: selectedItem, amount: itemsInArea }));
+    }
+
+    setDetectedItemsCount(itemsInArea);
 
     // Request the next animation frame
     requestAnimationFrame(detectFrame);
+  };
+
+  const handleSaveDetectionArea = () => {
+    dispatch(saveDetectionArea(detectionArea));
+    toast({
+      title: "Detection area saved",
+      description: "The detection area settings have been saved",
+    });
   };
 
   return (
@@ -148,6 +182,9 @@ const TensorflowDemo = () => {
               </Button>
               <Button onClick={toggleCamera} disabled={isDetecting}>
                 Toggle Camera
+              </Button>
+              <Button onClick={handleSaveDetectionArea}>
+                Save Detection Area
               </Button>
             </div>
             <div className="text-center">
