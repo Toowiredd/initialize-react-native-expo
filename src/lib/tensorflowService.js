@@ -4,6 +4,7 @@ import * as cocossd from '@tensorflow-models/coco-ssd';
 class TensorflowService {
   constructor() {
     this.model = null;
+    this.detectedItems = new Map();
   }
 
   async loadModel() {
@@ -16,20 +17,48 @@ class TensorflowService {
     }
   }
 
-  async detectObjects(imageElement) {
+  async detectObjects(imageElement, selectedItem) {
     if (!this.model) {
       throw new Error('Model not loaded');
     }
 
     const predictions = await this.model.detect(imageElement);
-    return this.filterPredictions(predictions);
+    return this.filterAndTrackPredictions(predictions, selectedItem);
   }
 
-  filterPredictions(predictions) {
-    const allowedClasses = ['bottle', 'can', 'carton'];
-    return predictions.filter(prediction => 
-      allowedClasses.includes(prediction.class.toLowerCase())
+  filterAndTrackPredictions(predictions, selectedItem) {
+    const allowedClasses = {
+      'plastic_bottle': ['bottle'],
+      'aluminum_can': ['can'],
+      'cardboard_carton': ['box', 'carton']
+    };
+
+    const filteredPredictions = predictions.filter(prediction => 
+      allowedClasses[selectedItem]?.includes(prediction.class.toLowerCase())
     );
+
+    // Update detected items
+    const currentTimestamp = Date.now();
+    filteredPredictions.forEach(prediction => {
+      const id = `${prediction.class}_${currentTimestamp}_${Math.random().toString(36).substr(2, 9)}`;
+      this.detectedItems.set(id, {
+        ...prediction,
+        lastSeen: currentTimestamp
+      });
+    });
+
+    // Remove old items
+    for (const [id, item] of this.detectedItems.entries()) {
+      if (currentTimestamp - item.lastSeen > 5000) { // Remove after 5 seconds
+        this.detectedItems.delete(id);
+      }
+    }
+
+    return Array.from(this.detectedItems.values());
+  }
+
+  getDetectedItemsCount() {
+    return this.detectedItems.size;
   }
 }
 

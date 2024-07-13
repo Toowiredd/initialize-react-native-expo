@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useSelector } from 'react-redux';
 import { tensorflowService } from '../lib/tensorflowService';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,9 +8,12 @@ import { useToast } from "@/components/ui/use-toast";
 const TensorflowDemo = () => {
   const [isModelLoaded, setIsModelLoaded] = useState(false);
   const [isDetecting, setIsDetecting] = useState(false);
+  const [detectedItemsCount, setDetectedItemsCount] = useState(0);
+  const [facingMode, setFacingMode] = useState('environment');
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const { toast } = useToast();
+  const selectedItem = useSelector((state) => state.settings.selectedItem);
 
   useEffect(() => {
     const loadModel = async () => {
@@ -43,9 +47,11 @@ const TensorflowDemo = () => {
     }
 
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { facingMode: facingMode } 
+      });
       videoRef.current.srcObject = stream;
-      videoRef.current.play();
+      await videoRef.current.play();
       setIsDetecting(true);
       detectFrame();
     } catch (error) {
@@ -65,25 +71,32 @@ const TensorflowDemo = () => {
     }
   };
 
+  const toggleCamera = () => {
+    stopDetection();
+    setFacingMode(prevMode => prevMode === 'user' ? 'environment' : 'user');
+  };
+
   const detectFrame = async () => {
     if (!isDetecting || !videoRef.current || !canvasRef.current) return;
 
-    const predictions = await tensorflowService.detectObjects(videoRef.current);
+    const detectedItems = await tensorflowService.detectObjects(videoRef.current, selectedItem);
     const ctx = canvasRef.current.getContext('2d');
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
     
     ctx.drawImage(videoRef.current, 0, 0, ctx.canvas.width, ctx.canvas.height);
 
-    predictions.forEach(prediction => {
-      const [x, y, width, height] = prediction.bbox;
+    detectedItems.forEach(item => {
+      const [x, y, width, height] = item.bbox;
       ctx.strokeStyle = '#00FFFF';
       ctx.lineWidth = 4;
       ctx.strokeRect(x, y, width, height);
 
       ctx.fillStyle = '#00FFFF';
       ctx.font = '18px Arial';
-      ctx.fillText(prediction.class, x, y > 10 ? y - 5 : 10);
+      ctx.fillText(item.class, x, y > 10 ? y - 5 : 10);
     });
+
+    setDetectedItemsCount(tensorflowService.getDetectedItemsCount());
 
     requestAnimationFrame(detectFrame);
   };
@@ -122,6 +135,13 @@ const TensorflowDemo = () => {
               <Button onClick={stopDetection} disabled={!isDetecting} variant="destructive">
                 Stop Detection
               </Button>
+              <Button onClick={toggleCamera} disabled={isDetecting}>
+                Toggle Camera
+              </Button>
+            </div>
+            <div className="text-center">
+              <p>Selected Item: {selectedItem || 'None'}</p>
+              <p>Detected Items Count: {detectedItemsCount}</p>
             </div>
           </div>
         </CardContent>
