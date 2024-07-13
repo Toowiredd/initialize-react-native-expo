@@ -1,6 +1,6 @@
 import { Package2 } from "lucide-react";
 import { NavLink } from "react-router-dom";
-import { navItems } from "../App";
+import { navItems } from "@/nav-items";
 import { SidebarNavLink } from "./SidebarNavLink";
 
 export const NavbarAndSidebar = () => (
@@ -17,7 +17,7 @@ export const NavbarAndSidebar = () => (
           {navItems.map((item) => (
             <SidebarNavLink key={item.to} to={item.to}>
               {item.icon}
-              {item.title}
+              <span className="ml-2">{item.title}</span>
             </SidebarNavLink>
           ))}
         </nav>

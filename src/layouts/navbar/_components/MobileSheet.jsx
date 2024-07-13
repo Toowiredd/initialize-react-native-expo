@@ -22,8 +22,9 @@ export const MobileSheet = () => (
           <span>Acme Inc</span>
         </NavItem>
         {navItems.map((item) => (
-          <NavItem key={item.to} to={item.to}>
-            {item.title}
+          <NavItem key={item.to} to={item.to} className="flex items-center">
+            {item.icon}
+            <span className="ml-2">{item.title}</span>
           </NavItem>
         ))}
       </nav>
