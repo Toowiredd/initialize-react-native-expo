@@ -14,6 +14,7 @@ const TensorflowDemo = () => {
   const canvasRef = useRef(null);
   const { toast } = useToast();
   const selectedItem = useSelector((state) => state.settings.selectedItem);
+  const [stream, setStream] = useState(null);
 
   useEffect(() => {
     const loadModel = async () => {
@@ -40,12 +41,9 @@ const TensorflowDemo = () => {
       setCount(parseInt(savedCount, 10));
     }
 
-    return () => {
-      if (videoRef.current && videoRef.current.srcObject) {
-        const tracks = videoRef.current.srcObject.getTracks();
-        tracks.forEach(track => track.stop());
-      }
-    };
+    startCamera();
+
+    return () => stopCamera();
   }, []);
 
   useEffect(() => {
@@ -53,7 +51,31 @@ const TensorflowDemo = () => {
     localStorage.setItem('objectCount', count.toString());
   }, [count]);
 
-  const startDetection = async () => {
+  const startCamera = async () => {
+    try {
+      const newStream = await navigator.mediaDevices.getUserMedia({ video: true });
+      setStream(newStream);
+      if (videoRef.current) {
+        videoRef.current.srcObject = newStream;
+        videoRef.current.play();
+      }
+    } catch (error) {
+      console.error('Error accessing the camera:', error);
+      toast({
+        title: "Camera access error",
+        description: "Unable to access the camera",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const stopCamera = () => {
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop());
+    }
+  };
+
+  const startDetection = () => {
     if (!tensorflowService.model) {
       toast({
         title: "Model not loaded",
@@ -72,28 +94,12 @@ const TensorflowDemo = () => {
       return;
     }
 
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      videoRef.current.srcObject = stream;
-      videoRef.current.play();
-      setIsDetecting(true);
-      detectFrame();
-    } catch (error) {
-      console.error('Error accessing the camera:', error);
-      toast({
-        title: "Camera access error",
-        description: "Unable to access the camera",
-        variant: "destructive",
-      });
-    }
+    setIsDetecting(true);
+    detectFrame();
   };
 
   const stopDetection = () => {
     setIsDetecting(false);
-    if (videoRef.current && videoRef.current.srcObject) {
-      const tracks = videoRef.current.srcObject.getTracks();
-      tracks.forEach(track => track.stop());
-    }
   };
 
   const detectFrame = async () => {
@@ -180,15 +186,18 @@ const TensorflowDemo = () => {
             <div className="relative">
               <video
                 ref={videoRef}
-                style={{ display: 'none' }}
                 width="640"
                 height="480"
+                className="border border-gray-300"
+                autoPlay
+                playsInline
+                muted
               />
               <canvas
                 ref={canvasRef}
                 width="640"
                 height="480"
-                className="border border-gray-300"
+                className="absolute top-0 left-0 pointer-events-none"
               />
             </div>
             <div className="flex justify-center space-x-4">

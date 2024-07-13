@@ -20,6 +20,7 @@ const Settings = () => {
   const { toast } = useToast();
   const dispatch = useDispatch();
   const selectedItem = useSelector((state) => state.settings.selectedItem);
+  const [stream, setStream] = useState(null);
 
   useEffect(() => {
     startCamera();
@@ -37,9 +38,10 @@ const Settings = () => {
 
   const startCamera = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+      const newStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+      setStream(newStream);
       if (videoRef.current) {
-        videoRef.current.srcObject = stream;
+        videoRef.current.srcObject = newStream;
         videoRef.current.play();
       }
     } catch (error) {
@@ -53,9 +55,8 @@ const Settings = () => {
   };
 
   const stopCamera = () => {
-    if (videoRef.current && videoRef.current.srcObject) {
-      const tracks = videoRef.current.srcObject.getTracks();
-      tracks.forEach(track => track.stop());
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop());
     }
   };
 
@@ -64,6 +65,7 @@ const Settings = () => {
   };
 
   const drawDetectionArea = () => {
+    if (!canvasRef.current) return;
     const ctx = canvasRef.current.getContext('2d');
     ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
     ctx.strokeStyle = 'red';
@@ -121,15 +123,18 @@ const Settings = () => {
             <div className="relative">
               <video
                 ref={videoRef}
-                style={{ display: 'none' }}
                 width="640"
                 height="480"
+                className="border border-gray-300"
+                autoPlay
+                playsInline
+                muted
               />
               <canvas
                 ref={canvasRef}
                 width="640"
                 height="480"
-                className="border border-gray-300"
+                className="absolute top-0 left-0 pointer-events-none"
               />
             </div>
             <div className="space-y-4">
