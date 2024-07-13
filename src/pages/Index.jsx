@@ -9,11 +9,15 @@ import { Link } from 'react-router-dom';
 
 const Index = () => {
   const dispatch = useDispatch();
-  const counters = useSelector((state) => state.counters);
+  const counters = useSelector((state) => {
+    console.log('Current state:', state);
+    return state.counters;
+  });
   const selectedItem = useSelector((state) => state.settings.selectedItem);
   const { toast } = useToast();
 
   useEffect(() => {
+    console.log('Index component mounted');
     const interval = setInterval(() => {
       if (selectedItem && selectedItem !== 'glass_bottle') {
         dispatch(incrementCount({ item: selectedItem, amount: Math.floor(Math.random() * 3) }));
@@ -31,6 +35,11 @@ const Index = () => {
     });
   };
 
+  if (!counters) {
+    console.error('Counters is undefined');
+    return <div>Loading...</div>;
+  }
+
   return (
     <div className="container mx-auto p-4">
       <Card className="mb-4">
@@ -47,8 +56,8 @@ const Index = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="flex items-center space-x-2">
-                      <Progress value={(count / 100) * 100} max={100} className="w-full" />
-                      <span className="text-sm font-medium">{count}</span>
+                      <Progress value={(count.allTime / 100) * 100} max={100} className="w-full" />
+                      <span className="text-sm font-medium">{count.allTime}</span>
                     </div>
                     {item === 'glass_bottle' && (
                       <Button onClick={handleManualIncrement} className="mt-2">
