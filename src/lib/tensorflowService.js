@@ -23,7 +23,49 @@ class TensorflowService {
     }
 
     const predictions = await this.model.detect(imageElement);
-    return this.filterAndTrackPredictions(predictions, selectedItem);
+    const nmsResults = this.applyNMS(predictions, 0.5, 0.5); // IOU threshold: 0.5, score threshold: 0.5
+    return this.filterAndTrackPredictions(nmsResults, selectedItem);
+  }
+
+  applyNMS(boxes, iouThreshold, scoreThreshold) {
+    // Sort boxes by score in descending order
+    boxes.sort((a, b) => b.score - a.score);
+
+    const selected = [];
+    const active = new Array(boxes.length).fill(true);
+
+    for (let i = 0; i < boxes.length; i++) {
+      if (!active[i]) continue;
+      
+      selected.push(boxes[i]);
+      
+      for (let j = i + 1; j < boxes.length; j++) {
+        if (!active[j]) continue;
+        
+        const iou = this.calculateIOU(boxes[i].bbox, boxes[j].bbox);
+        if (iou >= iouThreshold) {
+          active[j] = false;
+        }
+      }
+    }
+
+    return selected.filter(box => box.score >= scoreThreshold);
+  }
+
+  calculateIOU(box1, box2) {
+    const [x1, y1, width1, height1] = box1;
+    const [x2, y2, width2, height2] = box2;
+
+    const xA = Math.max(x1, x2);
+    const yA = Math.max(y1, y2);
+    const xB = Math.min(x1 + width1, x2 + width2);
+    const yB = Math.min(y1 + height1, y2 + height2);
+
+    const intersectionArea = Math.max(0, xB - xA) * Math.max(0, yB - yA);
+    const box1Area = width1 * height1;
+    const box2Area = width2 * height2;
+
+    return intersectionArea / (box1Area + box2Area - intersectionArea);
   }
 
   filterAndTrackPredictions(predictions, selectedItem) {
