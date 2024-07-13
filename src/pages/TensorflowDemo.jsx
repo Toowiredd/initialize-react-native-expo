@@ -153,7 +153,7 @@ const TensorflowDemo = () => {
             <div className="text-center">
               <p>Selected Item: {selectedItem || 'None'}</p>
               <p>Detected Items Count: {detectedItemsCount}</p>
-              <p>Current Count: {selectedItem ? counters[selectedItem] : 'N/A'}</p>
+              <p>Current Count: {selectedItem ? counters[selectedItem].allTime : 'N/A'}</p>
             </div>
           </div>
         </CardContent>
