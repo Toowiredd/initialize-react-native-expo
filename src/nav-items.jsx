@@ -1,6 +1,6 @@
-import { Home, Brain, Settings } from "lucide-react";
+import { Home, BarChart, Settings } from "lucide-react";
 import Index from "./pages/Index.jsx";
-import TensorflowDemo from "./pages/TensorflowDemo.jsx";
+import Results from "./pages/Results.jsx";
 import SettingsPage from "./pages/Settings.jsx";
 
 export const navItems = [
@@ -11,10 +11,10 @@ export const navItems = [
     page: <Index />,
   },
   {
-    title: "TensorFlow Demo",
-    to: "/tensorflow-demo",
-    icon: <Brain className="h-4 w-4" />,
-    page: <TensorflowDemo />,
+    title: "Results",
+    to: "/results",
+    icon: <BarChart className="h-4 w-4" />,
+    page: <Results />,
   },
   {
     title: "Settings",
