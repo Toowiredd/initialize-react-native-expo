@@ -15,7 +15,7 @@ import { toPng } from 'html-to-image';
 
 const TensorflowDemo = () => {
   const [isModelLoaded, setIsModelLoaded] = useState(false);
-  const [isDetecting, setIsDetecting] = useState(false);
+  const [isMonitoring, setIsMonitoring] = useState(false);
   const [detectedItemsCount, setDetectedItemsCount] = useState(0);
   const [facingMode, setFacingMode] = useState('environment');
   const [detectionArea, setDetectionArea] = useState({ x: 0, y: 0, width: 100, height: 100 });
@@ -44,7 +44,7 @@ const TensorflowDemo = () => {
         setIsModelLoaded(true);
         toast({
           title: "Model loaded successfully",
-          description: "Ready to start object detection",
+          description: "Ready to start continuous monitoring",
         });
       } catch (error) {
         console.error('Error loading the model:', error);
@@ -59,11 +59,10 @@ const TensorflowDemo = () => {
   }, []);
 
   useEffect(() => {
-    // Load saved detection area
     setDetectionArea(savedDetectionArea);
   }, [savedDetectionArea]);
 
-  const startDetection = async () => {
+  const startMonitoring = async () => {
     if (!isModelLoaded) {
       toast({
         title: "Model not loaded",
@@ -79,8 +78,8 @@ const TensorflowDemo = () => {
       });
       videoRef.current.srcObject = stream;
       await videoRef.current.play();
-      setIsDetecting(true);
-      detectFrame();
+      setIsMonitoring(true);
+      monitorFrame();
     } catch (error) {
       console.error('Error accessing the camera:', error);
       toast({
@@ -91,31 +90,27 @@ const TensorflowDemo = () => {
     }
   };
 
-  const stopDetection = () => {
-    setIsDetecting(false);
+  const stopMonitoring = () => {
+    setIsMonitoring(false);
     if (videoRef.current.srcObject) {
       videoRef.current.srcObject.getTracks().forEach(track => track.stop());
     }
   };
 
   const toggleCamera = () => {
-    stopDetection();
+    stopMonitoring();
     setFacingMode(prevMode => prevMode === 'user' ? 'environment' : 'user');
   };
 
-  const detectFrame = async () => {
-    if (!isDetecting || !videoRef.current || !canvasRef.current) return;
+  const monitorFrame = async () => {
+    if (!isMonitoring || !videoRef.current || !canvasRef.current) return;
 
     const detectedItems = await tensorflowService.detectObjects(videoRef.current, selectedItem);
     const ctx = canvasRef.current.getContext('2d');
     
-    // Clear the previous frame
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-    
-    // Draw the current video frame
     ctx.drawImage(videoRef.current, 0, 0, ctx.canvas.width, ctx.canvas.height);
 
-    // Draw detection area
     ctx.strokeStyle = '#00FF00';
     ctx.lineWidth = 2;
     ctx.strokeRect(
@@ -125,12 +120,10 @@ const TensorflowDemo = () => {
       detectionArea.height * ctx.canvas.height / 100
     );
 
-    // Draw bounding boxes for detected items
     let itemsInArea = 0;
     detectedItems.forEach(item => {
       const [x, y, width, height] = item.bbox;
       
-      // Check if the detected item is within the detection area
       if (
         x >= detectionArea.x * ctx.canvas.width / 100 &&
         y >= detectionArea.y * ctx.canvas.height / 100 &&
@@ -149,11 +142,9 @@ const TensorflowDemo = () => {
       }
     });
 
-    // Only increment the count if items are detected within the area
     if (itemsInArea > 0) {
       dispatch(incrementCount({ item: selectedItem, amount: itemsInArea }));
       
-      // Trigger notification for detected items
       toast({
         title: `${selectedItem.replace('_', ' ')} Detected`,
         description: `${itemsInArea} item(s) detected in the area`,
@@ -162,8 +153,7 @@ const TensorflowDemo = () => {
 
     setDetectedItemsCount(itemsInArea);
 
-    // Request the next animation frame
-    requestAnimationFrame(detectFrame);
+    requestAnimationFrame(monitorFrame);
   };
 
   const handleSaveDetectionArea = () => {
@@ -239,7 +229,7 @@ const TensorflowDemo = () => {
     <div className="container mx-auto p-4">
       <Card>
         <CardHeader>
-          <CardTitle>TensorFlow.js Object Detection Demo</CardTitle>
+          <CardTitle>Continuous Monitoring System</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -263,13 +253,13 @@ const TensorflowDemo = () => {
               />
             </div>
             <div className="flex justify-center space-x-4">
-              <Button onClick={startDetection} disabled={isDetecting || !isModelLoaded}>
-                Start Detection
+              <Button onClick={startMonitoring} disabled={isMonitoring || !isModelLoaded}>
+                Start Monitoring
               </Button>
-              <Button onClick={stopDetection} disabled={!isDetecting} variant="destructive">
-                Stop Detection
+              <Button onClick={stopMonitoring} disabled={!isMonitoring} variant="destructive">
+                Stop Monitoring
               </Button>
-              <Button onClick={toggleCamera} disabled={isDetecting}>
+              <Button onClick={toggleCamera} disabled={isMonitoring}>
                 Toggle Camera
               </Button>
               <Button onClick={handleDefineArea}>
@@ -278,7 +268,7 @@ const TensorflowDemo = () => {
               <Button onClick={handleSaveDetectionArea}>
                 Save Detection Area
               </Button>
-              <Button onClick={captureScreenshot} disabled={!isDetecting}>
+              <Button onClick={captureScreenshot} disabled={!isMonitoring}>
                 Capture Screenshot
               </Button>
             </div>
