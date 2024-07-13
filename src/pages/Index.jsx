@@ -9,10 +9,7 @@ import { Link } from 'react-router-dom';
 
 const Index = () => {
   const dispatch = useDispatch();
-  const counters = useSelector((state) => {
-    console.log('Current state:', state);
-    return state.counters;
-  });
+  const counters = useSelector((state) => state.counters);
   const selectedItem = useSelector((state) => state.settings.selectedItem);
   const { toast } = useToast();
 
@@ -28,7 +25,7 @@ const Index = () => {
   }, [dispatch, selectedItem]);
 
   const handleManualIncrement = () => {
-    dispatch(incrementManualCount({ item: 'glass_bottle' }));
+    dispatch(incrementManualCount({ item: 'glass_bottle', date: new Date().toISOString().split('T')[0] }));
     toast({
       title: "Glass Bottle Count Incremented",
       description: "The glass bottle count has been manually increased.",
@@ -49,15 +46,15 @@ const Index = () => {
         <CardContent>
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {Object.entries(counters).map(([item, count]) => (
+              {Object.entries(counters).map(([item, counts]) => (
                 <Card key={item}>
                   <CardHeader>
                     <CardTitle className="text-lg capitalize">{item.replace('_', ' ')}</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="flex items-center space-x-2">
-                      <Progress value={(count.allTime / 100) * 100} max={100} className="w-full" />
-                      <span className="text-sm font-medium">{count.allTime}</span>
+                      <Progress value={(Object.values(counts.counts).reduce((a, b) => a + b, 0) / 100) * 100} max={100} className="w-full" />
+                      <span className="text-sm font-medium">{Object.values(counts.counts).reduce((a, b) => a + b, 0)}</span>
                     </div>
                     {item === 'glass_bottle' && (
                       <Button onClick={handleManualIncrement} className="mt-2">

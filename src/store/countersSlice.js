@@ -13,7 +13,7 @@ const countersSlice = createSlice({
   initialState,
   reducers: {
     incrementCount: (state, action) => {
-      const { item, amount, date } = action.payload;
+      const { item, amount, date = new Date().toISOString().split('T')[0] } = action.payload;
       if (state.hasOwnProperty(item)) {
         if (!state[item].counts[date]) {
           state[item].counts[date] = 0;
@@ -22,7 +22,7 @@ const countersSlice = createSlice({
       }
     },
     incrementManualCount: (state, action) => {
-      const { item, date } = action.payload;
+      const { item, date = new Date().toISOString().split('T')[0] } = action.payload;
       if (state.hasOwnProperty(item)) {
         if (!state[item].counts[date]) {
           state[item].counts[date] = 0;

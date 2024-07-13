@@ -13,7 +13,7 @@ const Results = () => {
   const prepareChartData = (period) => {
     return Object.entries(counters).map(([key, value]) => ({
       name: key.replace('_', ' '),
-      count: value[period],
+      count: Object.values(value.counts).reduce((a, b) => a + b, 0),
     }));
   };
 
@@ -31,13 +31,10 @@ const Results = () => {
   );
 
   const exportToCSV = () => {
-    const headers = ['Item', 'Daily', 'Weekly', 'Monthly', 'All-Time'];
+    const headers = ['Item', 'Total Count'];
     const rows = Object.entries(counters).map(([item, counts]) => [
       item,
-      counts.daily,
-      counts.weekly,
-      counts.monthly,
-      counts.allTime
+      Object.values(counts.counts).reduce((a, b) => a + b, 0)
     ]);
 
     const csvContent = [
@@ -83,38 +80,21 @@ const Results = () => {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Item</TableHead>
-                    <TableHead>Daily</TableHead>
-                    <TableHead>Weekly</TableHead>
-                    <TableHead>Monthly</TableHead>
-                    <TableHead>All-Time</TableHead>
+                    <TableHead>Total Count</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {Object.entries(counters).map(([item, counts]) => (
                     <TableRow key={item}>
                       <TableCell className="font-medium capitalize">{item.replace('_', ' ')}</TableCell>
-                      <TableCell>{counts.daily}</TableCell>
-                      <TableCell>{counts.weekly}</TableCell>
-                      <TableCell>{counts.monthly}</TableCell>
-                      <TableCell>{counts.allTime}</TableCell>
+                      <TableCell>{Object.values(counts.counts).reduce((a, b) => a + b, 0)}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
             </TabsContent>
             <TabsContent value="chart">
-              <Tabs defaultValue="daily">
-                <TabsList>
-                  <TabsTrigger value="daily">Daily</TabsTrigger>
-                  <TabsTrigger value="weekly">Weekly</TabsTrigger>
-                  <TabsTrigger value="monthly">Monthly</TabsTrigger>
-                  <TabsTrigger value="allTime">All-Time</TabsTrigger>
-                </TabsList>
-                <TabsContent value="daily">{renderBarChart('daily')}</TabsContent>
-                <TabsContent value="weekly">{renderBarChart('weekly')}</TabsContent>
-                <TabsContent value="monthly">{renderBarChart('monthly')}</TabsContent>
-                <TabsContent value="allTime">{renderBarChart('allTime')}</TabsContent>
-              </Tabs>
+              {renderBarChart('allTime')}
             </TabsContent>
           </Tabs>
         </CardContent>
