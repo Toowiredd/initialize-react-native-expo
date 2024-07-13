@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { incrementCount } from '../store/countersSlice';
+import { incrementCount, incrementManualCount } from '../store/countersSlice';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -15,13 +15,21 @@ const Index = () => {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      if (selectedItem) {
+      if (selectedItem && selectedItem !== 'glass_bottle') {
         dispatch(incrementCount({ item: selectedItem, amount: Math.floor(Math.random() * 3) }));
       }
     }, 5000); // Update every 5 seconds
 
     return () => clearInterval(interval);
   }, [dispatch, selectedItem]);
+
+  const handleManualIncrement = () => {
+    dispatch(incrementManualCount({ item: 'glass_bottle' }));
+    toast({
+      title: "Glass Bottle Count Incremented",
+      description: "The glass bottle count has been manually increased.",
+    });
+  };
 
   return (
     <div className="container mx-auto p-4">
@@ -42,6 +50,11 @@ const Index = () => {
                       <Progress value={(count / 100) * 100} max={100} className="w-full" />
                       <span className="text-sm font-medium">{count}</span>
                     </div>
+                    {item === 'glass_bottle' && (
+                      <Button onClick={handleManualIncrement} className="mt-2">
+                        Increment Glass Bottle
+                      </Button>
+                    )}
                   </CardContent>
                 </Card>
               ))}

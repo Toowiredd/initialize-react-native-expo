@@ -45,9 +45,11 @@ const Settings = () => {
                   <SelectValue placeholder="Select an item to detect" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="plastic_bottle">Plastic Drinking Bottles</SelectItem>
+                  <SelectItem value="pet_1">PET 1 Plastic Bottles</SelectItem>
+                  <SelectItem value="hdpe_2">HDPE 2 Plastic Bottles</SelectItem>
                   <SelectItem value="aluminum_can">Aluminum Cans</SelectItem>
                   <SelectItem value="cardboard_carton">Cardboard Cartons</SelectItem>
+                  <SelectItem value="glass_bottle">Glass Bottles (Manual Count)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
