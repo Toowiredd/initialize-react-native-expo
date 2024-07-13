@@ -13,7 +13,7 @@ const TensorflowDemo = () => {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const { toast } = useToast();
-  const selectedItem = useSelector((state) => state.settings.selectedItem);
+  const { selectedItem, detectionArea } = useSelector((state) => state.settings);
 
   useEffect(() => {
     const loadModel = async () => {
@@ -128,7 +128,7 @@ const TensorflowDemo = () => {
 
     ctx.font = '18px Arial';
     ctx.fillStyle = '#00FFFF';
-    ctx.fillText(selectedItem, x, y > 10 ? y - 5 : 10);
+    ctx.fillText(selectedItem.replace('_', ' '), x, y > 10 ? y - 5 : 10);
   };
 
   const captureImage = () => {
@@ -204,7 +204,7 @@ const TensorflowDemo = () => {
             </div>
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg capitalize">{selectedItem || 'No item selected'}</CardTitle>
+                <CardTitle className="text-lg capitalize">{selectedItem ? selectedItem.replace('_', ' ') : 'No item selected'}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex items-center space-x-2">

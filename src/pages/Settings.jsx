@@ -11,23 +11,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { setSelectedItem } from '../store/settingsSlice';
+import { setSelectedItem, setDetectionArea } from '../store/settingsSlice';
 
 const Settings = () => {
-  const [detectionArea, setDetectionArea] = useState({ x: 0, y: 0, width: 100, height: 100 });
+  const dispatch = useDispatch();
+  const { selectedItem, detectionArea } = useSelector((state) => state.settings);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const { toast } = useToast();
-  const dispatch = useDispatch();
-  const selectedItem = useSelector((state) => state.settings.selectedItem);
 
   useEffect(() => {
     startCamera();
-    // Load persisted detection area
-    const savedArea = localStorage.getItem('detectionArea');
-    if (savedArea) {
-      setDetectionArea(JSON.parse(savedArea));
-    }
     return () => stopCamera();
   }, []);
 
@@ -60,7 +54,7 @@ const Settings = () => {
   };
 
   const updateDetectionArea = (dimension, value) => {
-    setDetectionArea(prev => ({ ...prev, [dimension]: value }));
+    dispatch(setDetectionArea({ ...detectionArea, [dimension]: value }));
   };
 
   const drawDetectionArea = () => {
@@ -80,7 +74,7 @@ const Settings = () => {
     localStorage.setItem('detectionArea', JSON.stringify(detectionArea));
     toast({
       title: "Settings saved",
-      description: "Detection area settings have been saved",
+      description: "Detection area and item selection settings have been saved",
     });
   };
 
@@ -96,19 +90,17 @@ const Settings = () => {
         </CardHeader>
         <CardContent>
           <Select onValueChange={handleItemSelection} value={selectedItem}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Select an item" />
+            <SelectTrigger className="w-[280px]">
+              <SelectValue placeholder="Select an item to detect" />
             </SelectTrigger>
             <SelectContent>
-              {['person', 'car', 'dog', 'cat', 'bicycle'].map((item) => (
-                <SelectItem key={item} value={item}>
-                  {item}
-                </SelectItem>
-              ))}
+              <SelectItem value="plastic_bottle">Plastic Drinking Bottles</SelectItem>
+              <SelectItem value="aluminum_can">Aluminum Cans</SelectItem>
+              <SelectItem value="cardboard_carton">Cardboard Cartons</SelectItem>
             </SelectContent>
           </Select>
           {selectedItem && (
-            <p className="mt-2">Selected Item: {selectedItem}</p>
+            <p className="mt-2">Selected Item: {selectedItem.replace('_', ' ')}</p>
           )}
         </CardContent>
       </Card>
