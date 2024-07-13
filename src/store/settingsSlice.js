@@ -13,4 +13,5 @@ const settingsSlice = createSlice({
 });
 
 export const { setSelectedItem } = settingsSlice.actions;
+export const selectSelectedItem = (state) => state.settings.selectedItem;
 export default settingsSlice.reducer;

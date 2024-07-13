@@ -25,7 +25,7 @@ const Settings = () => {
     // In a real application, you might want to save this to local storage or a backend
     toast({
       title: "Settings saved",
-      description: "Your item selection has been saved",
+      description: `Your item selection (${selectedItem}) has been saved`,
     });
   };
 
@@ -40,7 +40,7 @@ const Settings = () => {
             <div>
               <h3 className="text-lg font-medium">Item Selection</h3>
               <p className="text-sm text-gray-500">Choose the item type for detection</p>
-              <Select onValueChange={handleItemSelection} value={selectedItem}>
+              <Select onValueChange={handleItemSelection} value={selectedItem || ""}>
                 <SelectTrigger className="w-[280px]">
                   <SelectValue placeholder="Select an item to detect" />
                 </SelectTrigger>
