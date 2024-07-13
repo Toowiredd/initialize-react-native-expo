@@ -178,9 +178,17 @@ const TensorflowDemo = () => {
     if (!videoRef.current) return;
 
     try {
-      const dataUrl = await toPng(videoRef.current);
+      // Use the canvas instead of the video element for capturing the screenshot
+      const canvas = document.createElement('canvas');
+      canvas.width = videoRef.current.videoWidth;
+      canvas.height = videoRef.current.videoHeight;
+      canvas.getContext('2d').drawImage(videoRef.current, 0, 0);
+      const dataUrl = canvas.toDataURL('image/png');
+      
       setCapturedScreenshot(dataUrl);
       setIsScreenshotDialogOpen(true);
+      
+      console.log('Screenshot captured:', dataUrl); // Add this line for debugging
     } catch (error) {
       console.error('Error capturing screenshot:', error);
       toast({
