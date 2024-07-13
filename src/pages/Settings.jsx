@@ -23,8 +23,17 @@ const Settings = () => {
 
   useEffect(() => {
     startCamera();
+    // Load persisted detection area
+    const savedArea = localStorage.getItem('detectionArea');
+    if (savedArea) {
+      setDetectionArea(JSON.parse(savedArea));
+    }
     return () => stopCamera();
   }, []);
+
+  useEffect(() => {
+    drawDetectionArea();
+  }, [detectionArea]);
 
   const startCamera = async () => {
     try {
@@ -52,7 +61,6 @@ const Settings = () => {
 
   const updateDetectionArea = (dimension, value) => {
     setDetectionArea(prev => ({ ...prev, [dimension]: value }));
-    drawDetectionArea();
   };
 
   const drawDetectionArea = () => {
@@ -92,9 +100,9 @@ const Settings = () => {
               <SelectValue placeholder="Select an item" />
             </SelectTrigger>
             <SelectContent>
-              {[1, 2, 3, 4, 5].map((item) => (
-                <SelectItem key={item} value={item.toString()}>
-                  Item {item}
+              {['person', 'car', 'dog', 'cat', 'bicycle'].map((item) => (
+                <SelectItem key={item} value={item}>
+                  {item}
                 </SelectItem>
               ))}
             </SelectContent>

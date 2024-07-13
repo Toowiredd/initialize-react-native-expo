@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useSelector } from 'react-redux';
 import { tensorflowService } from '../lib/tensorflowService';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,22 +7,17 @@ import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/components/ui/use-toast";
 
 const TensorflowDemo = () => {
-  const [counts, setCounts] = useState({
-    person: 0,
-    car: 0,
-    dog: 0,
-    cat: 0,
-    bicycle: 0
-  });
+  const [count, setCount] = useState(0);
   const [isDetecting, setIsDetecting] = useState(false);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const { toast } = useToast();
+  const selectedItem = useSelector((state) => state.settings.selectedItem);
 
   useEffect(() => {
     const loadModel = async () => {
       try {
-        await tensorflowService.loadModel('https://storage.googleapis.com/tfjs-models/savedmodel/ssdlite_mobilenet_v2/model.json');
+        await tensorflowService.loadModel();
         toast({
           title: "Model loaded successfully",
           description: "Ready to start object detection",
@@ -37,10 +33,10 @@ const TensorflowDemo = () => {
     };
     loadModel();
 
-    // Load persisted counts
-    const savedCounts = localStorage.getItem('objectCounts');
-    if (savedCounts) {
-      setCounts(JSON.parse(savedCounts));
+    // Load persisted count
+    const savedCount = localStorage.getItem('objectCount');
+    if (savedCount) {
+      setCount(parseInt(savedCount, 10));
     }
 
     return () => {
@@ -52,15 +48,24 @@ const TensorflowDemo = () => {
   }, []);
 
   useEffect(() => {
-    // Persist counts whenever they change
-    localStorage.setItem('objectCounts', JSON.stringify(counts));
-  }, [counts]);
+    // Persist count whenever it changes
+    localStorage.setItem('objectCount', count.toString());
+  }, [count]);
 
   const startDetection = async () => {
     if (!tensorflowService.model) {
       toast({
         title: "Model not loaded",
         description: "Please wait for the model to load",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!selectedItem) {
+      toast({
+        title: "No item selected",
+        description: "Please select an item in the settings page",
         variant: "destructive",
       });
       return;
@@ -93,18 +98,14 @@ const TensorflowDemo = () => {
   const detectFrame = async () => {
     if (!isDetecting || !videoRef.current || !canvasRef.current) return;
 
-    const predictions = await tensorflowService.detectObjects(videoRef.current);
+    const predictions = await tensorflowService.detectObjectsByItem(videoRef.current, selectedItem);
     const ctx = canvasRef.current.getContext('2d');
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
     
-    const newCounts = { ...counts };
+    setCount(prevCount => prevCount + predictions.length);
     predictions.forEach(prediction => {
-      if (counts.hasOwnProperty(prediction.class)) {
-        newCounts[prediction.class]++;
-        drawPrediction(prediction, ctx);
-      }
+      drawPrediction(prediction, ctx);
     });
-    setCounts(newCounts);
 
     requestAnimationFrame(detectFrame);
   };
@@ -121,7 +122,7 @@ const TensorflowDemo = () => {
 
     ctx.font = '18px Arial';
     ctx.fillStyle = '#00FFFF';
-    ctx.fillText(prediction.class, x, y > 10 ? y - 5 : 10);
+    ctx.fillText(selectedItem, x, y > 10 ? y - 5 : 10);
   };
 
   return (
@@ -154,21 +155,17 @@ const TensorflowDemo = () => {
                 Stop Detection
               </Button>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              {Object.entries(counts).map(([item, count]) => (
-                <Card key={item}>
-                  <CardHeader>
-                    <CardTitle className="text-lg capitalize">{item}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center space-x-2">
-                      <Progress value={count} max={20} className="w-full" />
-                      <span className="text-sm font-medium">{count}</span>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg capitalize">{selectedItem || 'No item selected'}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center space-x-2">
+                  <Progress value={count} max={100} className="w-full" />
+                  <span className="text-sm font-medium">{count}</span>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </CardContent>
       </Card>
