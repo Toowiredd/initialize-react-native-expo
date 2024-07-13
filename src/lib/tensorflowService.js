@@ -28,9 +28,11 @@ class TensorflowService {
 
   filterAndTrackPredictions(predictions, selectedItem) {
     const allowedClasses = {
-      'plastic_bottle': ['bottle'],
+      'pet_1': ['bottle'],
+      'hdpe_2': ['bottle'],
       'aluminum_can': ['can'],
-      'cardboard_carton': ['box', 'carton']
+      'cardboard_carton': ['box', 'carton'],
+      'glass_bottle': ['bottle']
     };
 
     const filteredPredictions = predictions.filter(prediction => 

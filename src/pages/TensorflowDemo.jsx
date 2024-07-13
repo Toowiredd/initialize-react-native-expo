@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { tensorflowService } from '../lib/tensorflowService';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
+import { incrementCount } from '../store/countersSlice';
 
 const TensorflowDemo = () => {
   const [isModelLoaded, setIsModelLoaded] = useState(false);
@@ -13,7 +14,9 @@ const TensorflowDemo = () => {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const { toast } = useToast();
+  const dispatch = useDispatch();
   const selectedItem = useSelector((state) => state.settings.selectedItem);
+  const counters = useSelector((state) => state.counters);
 
   useEffect(() => {
     const loadModel = async () => {
@@ -94,6 +97,9 @@ const TensorflowDemo = () => {
       ctx.fillStyle = '#00FFFF';
       ctx.font = '18px Arial';
       ctx.fillText(item.class, x, y > 10 ? y - 5 : 10);
+
+      // Increment the count for the detected item
+      dispatch(incrementCount({ item: selectedItem, amount: 1 }));
     });
 
     setDetectedItemsCount(tensorflowService.getDetectedItemsCount());
@@ -142,6 +148,7 @@ const TensorflowDemo = () => {
             <div className="text-center">
               <p>Selected Item: {selectedItem || 'None'}</p>
               <p>Detected Items Count: {detectedItemsCount}</p>
+              <p>Current Count: {selectedItem ? counters[selectedItem] : 'N/A'}</p>
             </div>
           </div>
         </CardContent>
