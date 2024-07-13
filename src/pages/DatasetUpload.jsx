@@ -1,16 +1,18 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { tensorflowService } from '../lib/tensorflowService';
 
 const DatasetUpload = () => {
   const [files, setFiles] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [parsedData, setParsedData] = useState(null);
+  const [trainingStatus, setTrainingStatus] = useState('');
   const { toast } = useToast();
 
   const handleFolderUpload = useCallback((event) => {
@@ -27,9 +29,12 @@ const DatasetUpload = () => {
       return JSON.parse(text);
     }));
 
-    const imageData = imageFiles.map(file => ({
-      name: file.name,
-      url: URL.createObjectURL(file)
+    const imageData = await Promise.all(imageFiles.map(async (file) => {
+      const arrayBuffer = await file.arrayBuffer();
+      return {
+        name: file.name,
+        data: new Uint8Array(arrayBuffer)
+      };
     }));
 
     setParsedData({ json: parsedJsonData, images: imageData });
@@ -61,6 +66,9 @@ const DatasetUpload = () => {
         title: "Upload complete",
         description: `${files.length} files processed successfully`,
       });
+
+      // Start training process
+      initiateTraining();
     } catch (error) {
       console.error('Error processing files:', error);
       toast({
@@ -74,11 +82,46 @@ const DatasetUpload = () => {
     }
   };
 
+  const initiateTraining = async () => {
+    if (!parsedData) {
+      toast({
+        title: "No data available",
+        description: "Please upload dataset first",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setTrainingStatus('Initiating training...');
+    try {
+      await tensorflowService.trainModel(parsedData);
+      setTrainingStatus('Training completed successfully!');
+      toast({
+        title: "Training complete",
+        description: "The model has been trained with the new dataset",
+      });
+    } catch (error) {
+      console.error('Error training model:', error);
+      setTrainingStatus('Error occurred during training');
+      toast({
+        title: "Training error",
+        description: "An error occurred while training the model",
+        variant: "destructive",
+      });
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      // Clean up any resources if needed
+    };
+  }, []);
+
   return (
     <div className="container mx-auto p-4">
       <Card>
         <CardHeader>
-          <CardTitle>Dataset Upload</CardTitle>
+          <CardTitle>Dataset Upload and Training</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -105,7 +148,7 @@ const DatasetUpload = () => {
               </div>
             )}
             <Button onClick={handleUpload} disabled={uploading || files.length === 0}>
-              {uploading ? 'Processing...' : 'Process Dataset'}
+              {uploading ? 'Processing...' : 'Process Dataset and Start Training'}
             </Button>
             {uploading && (
               <div>
@@ -118,6 +161,12 @@ const DatasetUpload = () => {
                 <h3 className="font-bold mt-4">Parsed Data Summary:</h3>
                 <p>JSON Files: {parsedData.json.length}</p>
                 <p>Image Files: {parsedData.images.length}</p>
+              </div>
+            )}
+            {trainingStatus && (
+              <div>
+                <h3 className="font-bold mt-4">Training Status:</h3>
+                <p>{trainingStatus}</p>
               </div>
             )}
           </div>
