@@ -26,80 +26,219 @@ const HelpTutorial = () => {
     <div className="container mx-auto p-4">
       <Card>
         <CardHeader>
-          <CardTitle>Help & Tutorial</CardTitle>
-          <CardDescription>Learn how to use our application effectively</CardDescription>
+          <CardTitle>Help & Documentation</CardTitle>
+          <CardDescription>Comprehensive guide to using our application</CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="getting-started">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="getting-started">Getting Started</TabsTrigger>
               <TabsTrigger value="features">Features</TabsTrigger>
+              <TabsTrigger value="troubleshooting">Troubleshooting</TabsTrigger>
               <TabsTrigger value="faq">FAQ</TabsTrigger>
               <TabsTrigger value="contact">Contact Support</TabsTrigger>
             </TabsList>
+            
             <TabsContent value="getting-started">
               <Card>
                 <CardHeader>
                   <CardTitle>Getting Started</CardTitle>
-                  <CardDescription>Learn the basics of our application</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ol className="list-decimal list-inside space-y-2">
-                    <li>Set up your account in the Settings page</li>
-                    <li>Choose the type of item you want to detect</li>
-                    <li>Start the detection process in the Demo page</li>
-                    <li>View your results in the Results page</li>
-                  </ol>
-                </CardContent>
-              </Card>
-            </TabsContent>
-            <TabsContent value="features">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Features Overview</CardTitle>
-                  <CardDescription>Explore what our application can do</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ul className="list-disc list-inside space-y-2">
-                    <li>Real-time object detection using TensorFlow.js</li>
-                    <li>Customizable detection area</li>
-                    <li>Multiple item type support</li>
-                    <li>Detailed results and statistics</li>
-                    <li>Model improvement through user feedback</li>
-                  </ul>
-                </CardContent>
-              </Card>
-            </TabsContent>
-            <TabsContent value="faq">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Frequently Asked Questions</CardTitle>
-                  <CardDescription>Find answers to common questions</CardDescription>
+                  <CardDescription>Learn how to set up and start using our application</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Accordion type="single" collapsible className="w-full">
                     <AccordionItem value="item-1">
-                      <AccordionTrigger>How accurate is the object detection?</AccordionTrigger>
+                      <AccordionTrigger>1. Account Setup</AccordionTrigger>
                       <AccordionContent>
-                        Our object detection is highly accurate, but results may vary depending on lighting conditions and object positioning. We continuously improve our model based on user feedback.
+                        <ul className="list-disc pl-5 space-y-2">
+                          <li>Navigate to the Settings page</li>
+                          <li>Choose your preferred item type for detection</li>
+                          <li>Save your settings</li>
+                        </ul>
                       </AccordionContent>
                     </AccordionItem>
                     <AccordionItem value="item-2">
-                      <AccordionTrigger>Can I use this application offline?</AccordionTrigger>
+                      <AccordionTrigger>2. Camera Access</AccordionTrigger>
                       <AccordionContent>
-                        Yes, our application is a Progressive Web App (PWA) that can work offline once it's been loaded. However, some features may require an internet connection.
+                        <ul className="list-disc pl-5 space-y-2">
+                          <li>Ensure your device has a working camera</li>
+                          <li>Grant camera permissions when prompted</li>
+                          <li>If using a mobile device, you can switch between front and rear cameras</li>
+                        </ul>
                       </AccordionContent>
                     </AccordionItem>
                     <AccordionItem value="item-3">
-                      <AccordionTrigger>How can I improve the model?</AccordionTrigger>
+                      <AccordionTrigger>3. Your First Detection</AccordionTrigger>
                       <AccordionContent>
-                        You can contribute to model improvement by capturing screenshots and providing metadata in the Demo page. This helps us train the model with more diverse data.
+                        <ul className="list-disc pl-5 space-y-2">
+                          <li>Go to the Demo page</li>
+                          <li>Click "Start Detection"</li>
+                          <li>Point your camera at the item you want to detect</li>
+                          <li>The application will highlight detected items in real-time</li>
+                        </ul>
                       </AccordionContent>
                     </AccordionItem>
                   </Accordion>
                 </CardContent>
               </Card>
             </TabsContent>
+            
+            <TabsContent value="features">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Features Overview</CardTitle>
+                  <CardDescription>Explore the capabilities of our application</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Accordion type="single" collapsible className="w-full">
+                    <AccordionItem value="item-1">
+                      <AccordionTrigger>Real-time Object Detection</AccordionTrigger>
+                      <AccordionContent>
+                        <p>Our application uses TensorFlow.js to provide real-time object detection. It can identify various types of recyclable items, including:</p>
+                        <ul className="list-disc pl-5 space-y-2 mt-2">
+                          <li>PET 1 Plastic Bottles</li>
+                          <li>HDPE 2 Plastic Bottles</li>
+                          <li>Aluminum Cans</li>
+                          <li>Cardboard Cartons</li>
+                          <li>Glass Bottles (Manual Count)</li>
+                        </ul>
+                      </AccordionContent>
+                    </AccordionItem>
+                    <AccordionItem value="item-2">
+                      <AccordionTrigger>Customizable Detection Area</AccordionTrigger>
+                      <AccordionContent>
+                        <p>You can define a specific area within the camera view for detection. This helps in focusing on a particular region and improves accuracy. To use this feature:</p>
+                        <ol className="list-decimal pl-5 space-y-2 mt-2">
+                          <li>Click on "Define Detection Area" in the Demo page</li>
+                          <li>Use the sliders to adjust the area's position and size</li>
+                          <li>Click "Save Detection Area" to apply your changes</li>
+                        </ol>
+                      </AccordionContent>
+                    </AccordionItem>
+                    <AccordionItem value="item-3">
+                      <AccordionTrigger>Results Tracking and Visualization</AccordionTrigger>
+                      <AccordionContent>
+                        <p>The Results page offers comprehensive tracking and visualization of your recycling efforts:</p>
+                        <ul className="list-disc pl-5 space-y-2 mt-2">
+                          <li>View detection counts for each item type</li>
+                          <li>Analyze data using various chart types (Bar, Line, Pie)</li>
+                          <li>Filter results by time range (All Time, Last Month, Last Week)</li>
+                          <li>Export data to CSV for further analysis</li>
+                        </ul>
+                      </AccordionContent>
+                    </AccordionItem>
+                    <AccordionItem value="item-4">
+                      <AccordionTrigger>Model Improvement</AccordionTrigger>
+                      <AccordionContent>
+                        <p>Help improve the detection model by contributing data:</p>
+                        <ol className="list-decimal pl-5 space-y-2 mt-2">
+                          <li>Capture screenshots during detection</li>
+                          <li>Add metadata to the captured images</li>
+                          <li>Submit the data to help train and refine the model</li>
+                        </ol>
+                        <p className="mt-2">This collaborative effort enhances the accuracy of the detection system over time.</p>
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="troubleshooting">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Troubleshooting</CardTitle>
+                  <CardDescription>Solutions to common issues</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Accordion type="single" collapsible className="w-full">
+                    <AccordionItem value="item-1">
+                      <AccordionTrigger>Camera Not Working</AccordionTrigger>
+                      <AccordionContent>
+                        <ol className="list-decimal pl-5 space-y-2">
+                          <li>Ensure you've granted camera permissions to the application</li>
+                          <li>Try refreshing the page</li>
+                          <li>If using a mobile device, try switching between front and rear cameras</li>
+                          <li>Check if your camera works in other applications</li>
+                          <li>Restart your browser or device</li>
+                        </ol>
+                      </AccordionContent>
+                    </AccordionItem>
+                    <AccordionItem value="item-2">
+                      <AccordionTrigger>Detection Not Accurate</AccordionTrigger>
+                      <AccordionContent>
+                        <ul className="list-disc pl-5 space-y-2">
+                          <li>Ensure proper lighting in the detection area</li>
+                          <li>Try adjusting the detection area to focus on the items</li>
+                          <li>Make sure the items are clearly visible and not obscured</li>
+                          <li>Consider contributing to model improvement by capturing and submitting screenshots with metadata</li>
+                        </ul>
+                      </AccordionContent>
+                    </AccordionItem>
+                    <AccordionItem value="item-3">
+                      <AccordionTrigger>Application Running Slowly</AccordionTrigger>
+                      <AccordionContent>
+                        <ul className="list-disc pl-5 space-y-2">
+                          <li>Close other resource-intensive applications or browser tabs</li>
+                          <li>Clear your browser cache and cookies</li>
+                          <li>Ensure you're using an up-to-date browser version</li>
+                          <li>If on mobile, check your device's available storage and close background apps</li>
+                        </ul>
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="faq">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Frequently Asked Questions</CardTitle>
+                  <CardDescription>Quick answers to common queries</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Accordion type="single" collapsible className="w-full">
+                    <AccordionItem value="item-1">
+                      <AccordionTrigger>How accurate is the object detection?</AccordionTrigger>
+                      <AccordionContent>
+                        Our object detection is highly accurate, typically above 90% for well-lit, clear images. However, results may vary depending on lighting conditions, object positioning, and camera quality. We continuously improve our model based on user feedback and contributions.
+                      </AccordionContent>
+                    </AccordionItem>
+                    <AccordionItem value="item-2">
+                      <AccordionTrigger>Can I use this application offline?</AccordionTrigger>
+                      <AccordionContent>
+                        Yes, our application is a Progressive Web App (PWA) that can work offline once it's been loaded. However, some features like submitting screenshots for model improvement may require an internet connection. Make sure to load the app while online before using it in offline mode.
+                      </AccordionContent>
+                    </AccordionItem>
+                    <AccordionItem value="item-3">
+                      <AccordionTrigger>How can I improve the model?</AccordionTrigger>
+                      <AccordionContent>
+                        You can contribute to model improvement by capturing screenshots and providing metadata in the Demo page. This helps us train the model with more diverse data. To do this:
+                        <ol className="list-decimal pl-5 space-y-2 mt-2">
+                          <li>Click the "Capture Screenshot" button during detection</li>
+                          <li>Fill in the metadata form with details about the captured image</li>
+                          <li>Submit the data to help refine the model</li>
+                        </ol>
+                      </AccordionContent>
+                    </AccordionItem>
+                    <AccordionItem value="item-4">
+                      <AccordionTrigger>Is my data secure?</AccordionTrigger>
+                      <AccordionContent>
+                        We take data security seriously. All detection data is stored locally on your device. When you choose to contribute screenshots for model improvement, the images and metadata are anonymized before being sent to our servers. We do not collect or store any personally identifiable information.
+                      </AccordionContent>
+                    </AccordionItem>
+                    <AccordionItem value="item-5">
+                      <AccordionTrigger>Can I delete my data?</AccordionTrigger>
+                      <AccordionContent>
+                        Yes, you can clear all locally stored data by going to your browser settings and clearing the site data for our application. This will reset all counters and remove any saved settings. Note that any anonymized data you've contributed for model improvement cannot be individually deleted from our servers.
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
             <TabsContent value="contact">
               <Card>
                 <CardHeader>
@@ -140,6 +279,14 @@ const HelpTutorial = () => {
                     </div>
                     <Button type="submit">Send Message</Button>
                   </form>
+                  <div className="mt-6">
+                    <h3 className="text-lg font-medium">Other Ways to Reach Us</h3>
+                    <ul className="mt-2 space-y-2">
+                      <li>Email: support@recycledetector.com</li>
+                      <li>Phone: +1 (555) 123-4567</li>
+                      <li>Hours: Monday - Friday, 9am - 5pm EST</li>
+                    </ul>
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
