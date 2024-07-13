@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -110,12 +110,6 @@ const DatasetUpload = () => {
       });
     }
   };
-
-  useEffect(() => {
-    return () => {
-      // Clean up any resources if needed
-    };
-  }, []);
 
   return (
     <div className="container mx-auto p-4">
