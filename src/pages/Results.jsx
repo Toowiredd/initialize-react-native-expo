@@ -3,9 +3,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/use-toast";
 
 const Results = () => {
   const counters = useSelector((state) => state.counters);
+  const { toast } = useToast();
 
   const prepareChartData = (period) => {
     return Object.entries(counters).map(([key, value]) => ({
@@ -27,11 +30,47 @@ const Results = () => {
     </ResponsiveContainer>
   );
 
+  const exportToCSV = () => {
+    const headers = ['Item', 'Daily', 'Weekly', 'Monthly', 'All-Time'];
+    const rows = Object.entries(counters).map(([item, counts]) => [
+      item,
+      counts.daily,
+      counts.weekly,
+      counts.monthly,
+      counts.allTime
+    ]);
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    if (link.download !== undefined) {
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', 'detection_data.csv');
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    toast({
+      title: "Export Successful",
+      description: "Detection data has been exported to CSV.",
+    });
+  };
+
   return (
     <div className="container mx-auto p-4">
       <Card>
         <CardHeader>
-          <CardTitle>Recycling Results</CardTitle>
+          <CardTitle className="flex justify-between items-center">
+            <span>Recycling Results</span>
+            <Button onClick={exportToCSV}>Export to CSV</Button>
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="table">
