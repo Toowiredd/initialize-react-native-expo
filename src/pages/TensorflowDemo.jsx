@@ -14,6 +14,7 @@ const TensorflowDemo = () => {
   const canvasRef = useRef(null);
   const { toast } = useToast();
   const { selectedItem, detectionArea } = useSelector((state) => state.settings);
+  const [stream, setStream] = useState(null);
 
   useEffect(() => {
     const loadModel = async () => {
@@ -41,9 +42,8 @@ const TensorflowDemo = () => {
     }
 
     return () => {
-      if (videoRef.current && videoRef.current.srcObject) {
-        const tracks = videoRef.current.srcObject.getTracks();
-        tracks.forEach(track => track.stop());
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
       }
     };
   }, []);
@@ -73,9 +73,10 @@ const TensorflowDemo = () => {
     }
 
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      videoRef.current.srcObject = stream;
-      videoRef.current.play();
+      const newStream = await navigator.mediaDevices.getUserMedia({ video: true });
+      setStream(newStream);
+      videoRef.current.srcObject = newStream;
+      await videoRef.current.play();
       setIsDetecting(true);
       detectFrame();
     } catch (error) {
@@ -90,9 +91,8 @@ const TensorflowDemo = () => {
 
   const stopDetection = () => {
     setIsDetecting(false);
-    if (videoRef.current && videoRef.current.srcObject) {
-      const tracks = videoRef.current.srcObject.getTracks();
-      tracks.forEach(track => track.stop());
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop());
     }
   };
 
@@ -180,15 +180,18 @@ const TensorflowDemo = () => {
             <div className="relative">
               <video
                 ref={videoRef}
-                style={{ display: 'none' }}
                 width="640"
                 height="480"
+                className="border border-gray-300"
+                autoPlay
+                playsInline
+                muted
               />
               <canvas
                 ref={canvasRef}
                 width="640"
                 height="480"
-                className="border border-gray-300"
+                className="absolute top-0 left-0 pointer-events-none"
               />
             </div>
             <div className="flex justify-center space-x-4">
