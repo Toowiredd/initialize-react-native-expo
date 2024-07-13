@@ -144,6 +144,12 @@ const TensorflowDemo = () => {
     // Only increment the count if items are detected within the area
     if (itemsInArea > 0) {
       dispatch(incrementCount({ item: selectedItem, amount: itemsInArea }));
+      
+      // Trigger notification for detected items
+      toast({
+        title: `${selectedItem.replace('_', ' ')} Detected`,
+        description: `${itemsInArea} item(s) detected in the area`,
+      });
     }
 
     setDetectedItemsCount(itemsInArea);
