@@ -9,6 +9,7 @@ import { useToast } from "@/components/ui/use-toast";
 const TensorflowDemo = () => {
   const [count, setCount] = useState(0);
   const [isDetecting, setIsDetecting] = useState(false);
+  const [capturedImages, setCapturedImages] = useState([]);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const { toast } = useToast();
@@ -107,6 +108,11 @@ const TensorflowDemo = () => {
       drawPrediction(prediction, ctx);
     });
 
+    // Capture image if object is detected
+    if (predictions.length > 0) {
+      captureImage();
+    }
+
     requestAnimationFrame(detectFrame);
   };
 
@@ -123,6 +129,44 @@ const TensorflowDemo = () => {
     ctx.font = '18px Arial';
     ctx.fillStyle = '#00FFFF';
     ctx.fillText(selectedItem, x, y > 10 ? y - 5 : 10);
+  };
+
+  const captureImage = () => {
+    if (videoRef.current) {
+      const canvas = document.createElement('canvas');
+      canvas.width = videoRef.current.videoWidth;
+      canvas.height = videoRef.current.videoHeight;
+      canvas.getContext('2d').drawImage(videoRef.current, 0, 0);
+      const imageDataUrl = canvas.toDataURL('image/jpeg');
+      setCapturedImages(prev => [...prev, { dataUrl: imageDataUrl, label: selectedItem }]);
+    }
+  };
+
+  const updateModel = async () => {
+    if (capturedImages.length === 0) {
+      toast({
+        title: "No images captured",
+        description: "Please capture some images before updating the model",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      await tensorflowService.updateModel(capturedImages);
+      toast({
+        title: "Model updated successfully",
+        description: `Updated with ${capturedImages.length} new images`,
+      });
+      setCapturedImages([]); // Clear captured images after update
+    } catch (error) {
+      console.error('Error updating the model:', error);
+      toast({
+        title: "Error updating model",
+        description: "An error occurred while updating the model",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -153,6 +197,9 @@ const TensorflowDemo = () => {
               </Button>
               <Button onClick={stopDetection} disabled={!isDetecting} variant="destructive">
                 Stop Detection
+              </Button>
+              <Button onClick={updateModel} disabled={isDetecting || capturedImages.length === 0}>
+                Update Model ({capturedImages.length} images)
               </Button>
             </div>
             <Card>

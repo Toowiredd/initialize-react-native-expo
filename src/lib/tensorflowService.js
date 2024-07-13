@@ -4,6 +4,7 @@ import * as cocossd from '@tensorflow-models/coco-ssd';
 class TensorflowService {
   constructor() {
     this.model = null;
+    this.customModel = null;
   }
 
   async loadModel() {
@@ -52,22 +53,59 @@ class TensorflowService {
     return predictions.filter(prediction => prediction.class === itemId);
   }
 
-  async trainModel(data) {
-    // This is a placeholder for the actual training process
-    // In a real-world scenario, you would need to implement the training logic here
-    // using TensorFlow.js APIs and the provided dataset
+  async updateModel(capturedImages) {
+    if (!this.customModel) {
+      // Initialize a new custom model if it doesn't exist
+      this.customModel = tf.sequential({
+        layers: [
+          tf.layers.conv2d({inputShape: [224, 224, 3], kernelSize: 5, filters: 8, activation: 'relu'}),
+          tf.layers.maxPooling2d({poolSize: [2, 2]}),
+          tf.layers.conv2d({kernelSize: 5, filters: 16, activation: 'relu'}),
+          tf.layers.maxPooling2d({poolSize: [2, 2]}),
+          tf.layers.flatten(),
+          tf.layers.dense({units: 32, activation: 'relu'}),
+          tf.layers.dense({units: 1, activation: 'sigmoid'})
+        ]
+      });
+      
+      this.customModel.compile({optimizer: 'adam', loss: 'binaryCrossentropy', metrics: ['accuracy']});
+    }
 
-    console.log('Starting model training with data:', data);
+    // Prepare the data for training
+    const xs = [];
+    const ys = [];
 
-    // Simulating training process
-    await new Promise(resolve => setTimeout(resolve, 5000));
+    for (const image of capturedImages) {
+      const img = await this.loadImage(image.dataUrl);
+      const tensor = tf.browser.fromPixels(img).resizeBilinear([224, 224]).toFloat().div(255.0).expandDims();
+      xs.push(tensor);
+      ys.push(image.label === 'person' ? 1 : 0); // Assuming binary classification for 'person' vs 'not person'
+    }
 
-    console.log('Model training completed');
+    const xDataset = tf.data.array(xs);
+    const yDataset = tf.data.array(ys);
+    const xyDataset = tf.data.zip({xs: xDataset, ys: yDataset}).batch(32);
 
-    // After training, you might want to save the model or update the existing one
-    // this.model = ... (update with newly trained model)
+    // Train the model
+    await this.customModel.fitDataset(xyDataset, {
+      epochs: 10,
+      callbacks: {
+        onEpochEnd: (epoch, logs) => {
+          console.log(`Epoch ${epoch}: loss = ${logs.loss}`);
+        }
+      }
+    });
 
-    return true;
+    console.log('Custom model updated successfully');
+  }
+
+  async loadImage(dataUrl) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = reject;
+      img.src = dataUrl;
+    });
   }
 }
 
